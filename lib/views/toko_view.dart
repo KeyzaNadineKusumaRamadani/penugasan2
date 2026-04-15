@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:toko_online/models/response_data_list.dart';
 import 'package:toko_online/services/toko_service.dart';
+import 'package:toko_online/views/tambahToko.dart';
+import 'package:toko_online/widgets/alert.dart';
 import 'package:toko_online/widgets/bottom_nav.dart';
 
 class tokoView extends StatefulWidget {
@@ -12,14 +14,15 @@ class tokoView extends StatefulWidget {
 
 class _tokoViewState extends State<tokoView> {
   TokoService tokoService = TokoService();
-  List? barang; 
+  List? action = ['update', 'hapus'];
+  List? barang;
 
-  getbarang() async { 
-    ResponseDataList getbarang = await tokoService.getbarang(); 
-    setState(() { 
-      barang = getbarang.data; 
-    }); 
-  } 
+  getbarang() async {
+    ResponseDataList getbarang = await tokoService.getbarang();
+    setState(() {
+      barang = getbarang.data;
+    });
+  }
 
   final Color primaryPurple = Color(0xFF9C27B0);
   final Color softPurple = Color(0xFF673AB7);
@@ -37,10 +40,7 @@ class _tokoViewState extends State<tokoView> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              primaryPurple.withOpacity(0.15),
-              Colors.white,
-            ],
+            colors: [primaryPurple.withOpacity(0.15), Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -48,7 +48,7 @@ class _tokoViewState extends State<tokoView> {
 
         child: Column(
           children: [
-            /// APPBAR GRADIENT
+            /// HEADER (APPBAR CUSTOM)
             Container(
               padding: const EdgeInsets.only(
                 top: 10,
@@ -59,28 +59,48 @@ class _tokoViewState extends State<tokoView> {
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    primaryPurple,
-                    softPurple,
-                  ],
+                  colors: [primaryPurple, softPurple],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: const Center(
-                child: Text(
-                  "Toko",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  /// Spacer agar judul tetap di tengah
+                  SizedBox(width: 40),
+
+                  /// TITLE
+                  const Text(
+                    "Toko",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+
+                  /// BUTTON TAMBAH (SEPERTI ACTIONS APPBAR)
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TambahTokoView(
+                            title: "Tambah Barang",
+                            item: null,
+                          ),
+                        ),
+                      ).then((value) => getbarang());
+                    },
+                    icon: const Icon(Icons.add, color: Colors.white),
+                  ),
+                ],
               ),
             ),
-            
 
-            /// GRID PRODUK (DITAMBAHKAN CEK NULL)
+            /// GRID PRODUK
             Expanded(
               child: barang != null
                   ? Padding(
@@ -89,11 +109,11 @@ class _tokoViewState extends State<tokoView> {
                         itemCount: barang!.length,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 0.62,
-                        ),
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 0.62,
+                            ),
                         itemBuilder: (context, index) {
                           final item = barang![index];
 
@@ -113,14 +133,13 @@ class _tokoViewState extends State<tokoView> {
                                   color: primaryPurple.withOpacity(0.15),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
-                                )
+                                ),
                               ],
                             ),
+
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                
                                 /// GAMBAR PRODUK
                                 Expanded(
                                   child: Stack(
@@ -129,21 +148,21 @@ class _tokoViewState extends State<tokoView> {
                                         decoration: BoxDecoration(
                                           borderRadius:
                                               const BorderRadius.vertical(
-                                            top: Radius.circular(14),
-                                          ),
+                                                top: Radius.circular(14),
+                                              ),
                                           image: DecorationImage(
-                                            image: NetworkImage(
-                                                item.image),
+                                            image: NetworkImage(item.image),
                                             fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
+
+                                      /// LABEL PROMO
                                       Positioned(
                                         top: 8,
                                         left: 8,
                                         child: Container(
-                                          padding:
-                                              const EdgeInsets.symmetric(
+                                          padding: const EdgeInsets.symmetric(
                                             horizontal: 8,
                                             vertical: 4,
                                           ),
@@ -154,18 +173,94 @@ class _tokoViewState extends State<tokoView> {
                                                 softPurple,
                                               ],
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: const Text(
                                             "PROMO",
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 10,
-                                              fontWeight:
-                                                  FontWeight.bold,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
+                                        ),
+                                      ),
+
+                                      /// MENU UPDATE & HAPUS
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: PopupMenuButton(
+                                          icon: const Icon(
+                                            Icons.more_vert,
+                                            color: Colors.white,
+                                          ),
+                                          itemBuilder: (BuildContext context) {
+                                            return action!.map((r) {
+                                              return PopupMenuItem(
+                                                value: r,
+                                                child: Text(r),
+                                                onTap: () async {
+                                                  if (r == "update") {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            TambahTokoView(
+                                                              title:
+                                                                  "Update Barang",
+                                                              item:
+                                                                  barang![index],
+                                                            ),
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    var results =
+                                                        await AlertMessage()
+                                                            .showAlertDialog(
+                                                              context,
+                                                            );
+
+                                                    if (results != null &&
+                                                        results.containsKey(
+                                                          'status',
+                                                        )) {
+                                                      if (results['status'] ==
+                                                          true) {
+                                                        var res =
+                                                            await tokoService
+                                                                .hapusbarang(
+                                                                  context,
+                                                                  barang![index]
+                                                                      .id,
+                                                                );
+
+                                                        if (res.status ==
+                                                            true) {
+                                                          AlertMessage()
+                                                              .showAlert(
+                                                                context,
+                                                                res.message,
+                                                                true,
+                                                              );
+                                                          getbarang();
+                                                        } else {
+                                                          AlertMessage()
+                                                              .showAlert(
+                                                                context,
+                                                                res.message,
+                                                                false,
+                                                              );
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                              );
+                                            }).toList();
+                                          },
                                         ),
                                       ),
                                     ],
@@ -182,23 +277,24 @@ class _tokoViewState extends State<tokoView> {
                                       Text(
                                         item.namaBarang,
                                         maxLines: 2,
-                                        overflow:
-                                            TextOverflow.ellipsis,
+                                        overflow: TextOverflow.ellipsis,
                                         style: const TextStyle(
-                                          fontWeight:
-                                              FontWeight.w600,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
+
                                       const SizedBox(height: 6),
+
                                       Text(
                                         "${item.harga}",
                                         style: TextStyle(
                                           color: primaryPurple,
-                                          fontWeight:
-                                              FontWeight.bold,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
+
                                       const SizedBox(height: 4),
+
                                       Text(
                                         "0",
                                         style: const TextStyle(
@@ -208,18 +304,14 @@ class _tokoViewState extends State<tokoView> {
                                       ),
                                     ],
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           );
                         },
                       ),
                     )
-
-                 
-                  : const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                  : const Center(child: CircularProgressIndicator()),
             ),
           ],
         ),
@@ -229,7 +321,3 @@ class _tokoViewState extends State<tokoView> {
     );
   }
 }
-
-
-
-

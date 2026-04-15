@@ -7,7 +7,7 @@ class LoginView extends StatefulWidget {
 
   @override
   State<LoginView> createState() => _LoginViewState();
-}
+} 
 
 class _LoginViewState extends State<LoginView> {
   UserService user = UserService();
