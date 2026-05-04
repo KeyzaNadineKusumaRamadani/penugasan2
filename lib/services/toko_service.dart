@@ -166,4 +166,45 @@ class TokoService {
       message: "error ${res.statusCode}",
     );
   }
+  Future getbarangUser() async {
+  var uri = Uri.parse(url.BaseUrl + "/user/getbarang");
+  UserLogin userLogin = UserLogin();
+  var user = await userLogin.getUserLogin();
+  if (user.status == false) {
+    ResponseDataList response = ResponseDataList(
+      status: false,
+      message: 'anda belum login / token invalid',
+    );
+    return response;
+  }
+  Map<String, String> headers = {"Authorization": 'Bearer ${user.token}'};
+  var getBarang = await http.get(uri, headers: headers);
+
+
+  if (getBarang.statusCode == 200) {
+    var data = json.decode(getBarang.body);
+    if (data["status"] == true) {
+      List barang = data["data"].map((r) => TokoModel.fromJson(r)).toList();
+      ResponseDataList response = ResponseDataList(
+        status: true,
+        message: 'success load data',
+        data: barang,
+      );
+      return response;
+    } else {
+      ResponseDataList response = ResponseDataList(
+        status: false,
+        message: 'Failed load data',
+      );
+      return response;
+    }
+  } else {
+    ResponseDataList response = ResponseDataList(
+      status: false,
+      message: "gagal load barang dengan code error ${getBarang.statusCode}",
+    );
+    return response;
+  }
+}
+
 }

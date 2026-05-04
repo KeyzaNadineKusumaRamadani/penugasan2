@@ -58,7 +58,7 @@ class UserService {
         ResponseDataMap response = ResponseDataMap( 
             status: true, message: "Sukses login user", data: data); 
         return response; 
-      } else { 
+      } else {  
         ResponseDataMap response = 
             ResponseDataMap(status: false, message: 'Email dan password salah'); 
         return response; 
